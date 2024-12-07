@@ -26,7 +26,7 @@ export const Timeline = ({ match }) => {
   };
 
   const getDesc = (description) => {
-    return translations[description] || description; // Return the translated text if found, otherwise return the original text
+    return translations[description] || description;
   };
 
   const sortEventsByClock = (events) => {

@@ -41,7 +41,7 @@ export const Field = ({ match }) => {
   };
 
   const getShotDesc = (description) => {
-    return translations[description] || description; // Return the translated text if found, otherwise return the original text
+    return translations[description] || description;
   };
   
 

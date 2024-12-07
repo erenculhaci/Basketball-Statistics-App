@@ -350,10 +350,10 @@ export default function Match() {
     </div>
     {clockExists ? (
             <div className="text-md font-medium">
-              {time.p}.periyot {time.m}:{time.s}
+              {time.p}.period {time.m}:{time.s}
             </div>
           ) : (
-            <div className="text-md font-medium">Bitti</div>
+            <div className="text-md font-medium">Finished</div>
           )}
 
           {}
