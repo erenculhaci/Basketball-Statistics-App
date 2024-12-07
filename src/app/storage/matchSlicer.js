@@ -11,19 +11,23 @@ export const matchSlicer = createSlice({
   name: "match",
   initialState,
   reducers: {
-    buildMatch: (state, action) => {
+    
+    initializeGame: (state, action) => {
       state.value = action.payload;
     },
-    setMatches: (state, action) => {
+
+    updateGameList: (state, action) => {
       state.matches = action.payload;
     },
-    deleteMatch: (state, action) => {
+
+    removeGame: (state, action) => {
       const index = action.payload; 
       state.matches = state.matches.filter((_, i) => i !== index); 
       localStorage.setItem("matches", JSON.stringify(state.matches));
 
     },
-    addNewMatch: (state, action) => {
+
+    addGame: (state, action) => {
       state.matches = [action.payload, ...state.matches];
       state.clocks[action.payload.seasonId] = {
         running: false,
@@ -31,7 +35,8 @@ export const matchSlicer = createSlice({
       };
       localStorage.setItem("matches", JSON.stringify(state.matches)); // Persist matches
     },
-    addShot: (state, action) => {
+
+    recordShot: (state, action) => {
       const { matchId, shot } = action.payload;
       let matchIndex = -1;
       for (let i = 0; i < state.matches.length; i++) {
@@ -44,7 +49,8 @@ export const matchSlicer = createSlice({
         state.matches[matchIndex].shotChart.shots.push(shot);
       }
     },
-    addEvent: (state, action) => {
+
+    logEvent: (state, action) => {
       const { matchId, event } = action.payload;
       let matchIndex = -1;
       for (let i = 0; i < state.matches.length; i++) {
@@ -79,11 +85,13 @@ export const matchSlicer = createSlice({
       }
       localStorage.setItem("matches", JSON.stringify(state.matches));
     },
-    setClocks: (state, action) => {
+
+    configureTimers: (state, action) => {
       state.clocks = action.payload;
       localStorage.setItem("clocks", JSON.stringify(state.clocks));
     },
-    toggleClock: (state, action) => {
+
+    toggleTimer: (state, action) => {
       state.clocks[action.payload].running =
         !state.clocks[action.payload].running;
     },
@@ -91,14 +99,14 @@ export const matchSlicer = createSlice({
 });
 
 export const {
-  buildMatch,
-  addNewMatch,
-  addShot,
-  addEvent,
-  setMatches,
-  setClocks,
-  toggleClock,
-  deleteMatch,
+  initializeGame,
+  addGame,
+  recordShot,
+  logEvent,
+  updateGameList,
+  configureTimers,
+  toggleTimer,
+  removeGame,
 } = matchSlicer.actions;
 
 export default matchSlicer.reducer;

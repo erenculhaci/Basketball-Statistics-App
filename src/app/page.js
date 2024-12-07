@@ -4,10 +4,10 @@ import { Button, Input, Popconfirm, Card, Space, Modal, Select, Typography, mess
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
-import { addNewMatch, buildMatch, deleteMatch } from "./storage/matchSlicer";
+import { addGame, initializeGame, removeGame } from "./storage/matchSlicer";
 import { getPopulatedPlayers, players } from "./data/player_data";
 import { getPopulatedTeams, teams } from "./data/team_data";
-import { getTeamScoresFromPBP } from "./utility/getTeamScores";
+import { calculateTeamPoints } from "./utility/getTeamScores";
 import { debounce } from "lodash";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
 
@@ -23,7 +23,7 @@ export default function Home() {
   const [filteredMatches, setFilteredMatches] = useState(matchList);
 
   const handleDeleteMatch = (index) => {
-    dispatch(deleteMatch(index));
+    dispatch(removeGame(index));
     router.push("/");
     message.success("Match deleted successfully!");
   }
@@ -86,8 +86,8 @@ export default function Home() {
         }}
         onOk={() => {
           const matchData = buildInitialMatchData();
-          dispatch(buildMatch(matchData));
-          dispatch(addNewMatch(matchData));
+          dispatch(initializeGame(matchData));
+          dispatch(addGame(matchData));
           setIsModalOpen(false);
         }}
         okText="Continue"
@@ -177,7 +177,7 @@ export default function Home() {
     const date = new Date(fixture.startTimeLocal);
     const formattedDate = date.toLocaleDateString("tr-TR", { year: "numeric", month: "long", day: "numeric" });
 
-    const teamScoresFromPBP = getTeamScoresFromPBP(match.pbp);
+    const teamScoresFromPBP = calculateTeamPoints(match.pbp);
     const competitor1 = fixture.competitors[0];
     const competitor2 = fixture.competitors[1];
 

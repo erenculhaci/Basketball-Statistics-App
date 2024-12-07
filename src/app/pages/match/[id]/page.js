@@ -1,12 +1,12 @@
 "use client";
 import { Field } from "@/app/components/field";
-import { Stats } from "@/app/components/stats";
+import { Stats } from "@/app/components/statstab";
 import { Timeline } from "@/app/components/timeline";
 import { eventOptions } from "@/app/utility/constants";
 import { getPopulatedPlayers } from "@/app/data/player_data";
-import { addEvent, toggleClock, deleteMatch  } from "@/app/storage/matchSlicer";
+import { logEvent, toggleTimer, removeGame  } from "@/app/storage/matchSlicer";
 import { calculateEventTime } from "@/app/utility/calcEventTimes";
-import { getTeamScoresFromPBP } from "@/app/utility/getTeamScores";
+import { calculateTeamPoints } from "@/app/utility/getTeamScores";
 import { Button, Modal, Tabs, Typography } from "antd";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
@@ -40,7 +40,7 @@ export default function Match() {
   const periodData = matchData.periodData;
   const teamScoreKeys = Object.keys(periodData.teamScores);
 
-  const teamScoresFromPBP = getTeamScoresFromPBP(matchData.pbp);
+  const teamScoresFromPBP = calculateTeamPoints(matchData.pbp);
 
   const getHomePlayerOptions = () => {
     return matchData.statistics.home.persons;
@@ -112,7 +112,7 @@ export default function Match() {
               y: coordinates.y,
             };
             dispatch(
-              addEvent({
+              logEvent({
                 matchId: matchData.seasonId,
                 event: newShot,
               })
@@ -330,7 +330,7 @@ export default function Match() {
       {matchData.isCustom && clockExists && (
         <Button
           onClick={() => {
-            dispatch(toggleClock(matchData.seasonId));
+            dispatch(toggleTimer(matchData.seasonId));
           }}
           style={{ color: "white" }}
         >

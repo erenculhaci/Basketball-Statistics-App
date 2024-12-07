@@ -1,72 +1,56 @@
-export const getPBPEvents = (pbpData) => {
+export const fetchAllEvents = (playbackData) => {
   try {
-    let allEvents = pbpData[1].events;
-    if (pbpData[2]?.events) {
-      allEvents = allEvents.concat(pbpData[2].events);
+    let events = playbackData[1]?.events || [];
+    for (let i = 2; i <= 4; i++) {
+      if (playbackData[i]?.events) {
+        events = events.concat(playbackData[i].events);
+      }
     }
-    if (pbpData[3]?.events) {
-      allEvents = allEvents.concat(pbpData[3].events);
-    }
-    if (pbpData[4]?.events) {
-      allEvents = allEvents.concat(pbpData[4].events);
-    }
-    return allEvents;
+    return events;
   } catch {
     return [];
   }
 };
 
-export const getTeamScoresFromPBP = (pbpData) => {
+export const calculateTeamPoints = (playbackData) => {
   try {
-    let allEvents = getPBPEvents(pbpData);
-    let entities = {};
-    allEvents.forEach((item) => {
-      if (
-        (item.desc.includes("2 Sayı") || item.desc.includes("İki Sayı")) &&
-        item.success
-      ) {
-        entities[item.entityId] = (entities[item.entityId] ?? 0) + 2;
-      } else if (
-        (item.desc.includes("3 Sayı") || item.desc.includes("Üç Sayı")) &&
-        item.success
-      ) {
-        entities[item.entityId] = (entities[item.entityId] ?? 0) + 3;
-      } else if (
-        (item.desc.includes("1 Sayı") || item.desc.includes("Serbest")) &&
-        item.success
-      ) {
-        entities[item.entityId] = (entities[item.entityId] ?? 0) + 1;
-      }
-    });
-    return entities;
+    const events = fetchAllEvents(playbackData);
+    return computeScores(events);
   } catch {
     return {};
   }
 };
 
-export const getTeamScoresFromPBPEvents = (allEvents) => {
+export const computeTeamScoresFromEvents = (events) => {
   try {
-    let entities = {};
-    allEvents.forEach((item) => {
-      if (
-        (item.desc.includes("2 Sayı") || item.desc.includes("İki Sayı")) &&
-        item.success
-      ) {
-        entities[item.entityId] = (entities[item.entityId] ?? 0) + 2;
-      } else if (
-        (item.desc.includes("3 Sayı") || item.desc.includes("Üç Sayı")) &&
-        item.success
-      ) {
-        entities[item.entityId] = (entities[item.entityId] ?? 0) + 3;
-      } else if (
-        (item.desc.includes("1 Sayı") || item.desc.includes("Serbest")) &&
-        item.success
-      ) {
-        entities[item.entityId] = (entities[item.entityId] ?? 0) + 1;
-      }
-    });
-    return entities;
+    return computeScores(events);
   } catch {
     return {};
   }
 };
+
+const computeScores = (events) => {
+  const scores = {};
+  events.forEach((event) => {
+    if (isSuccessfulTwoPointer(event)) {
+      scores[event.entityId] = (scores[event.entityId] ?? 0) + 2;
+    } else if (isSuccessfulThreePointer(event)) {
+      scores[event.entityId] = (scores[event.entityId] ?? 0) + 3;
+    } else if (isSuccessfulFreeThrow(event)) {
+      scores[event.entityId] = (scores[event.entityId] ?? 0) + 1;
+    }
+  });
+  return scores;
+};
+
+const isSuccessfulTwoPointer = (event) =>
+  (event.desc.includes("2 Sayı") || event.desc.includes("İki Sayı")) &&
+  event.success;
+
+const isSuccessfulThreePointer = (event) =>
+  (event.desc.includes("3 Sayı") || event.desc.includes("Üç Sayı")) &&
+  event.success;
+
+const isSuccessfulFreeThrow = (event) =>
+  (event.desc.includes("1 Sayı") || event.desc.includes("Serbest")) &&
+  event.success;

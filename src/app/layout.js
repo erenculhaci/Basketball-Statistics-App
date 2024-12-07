@@ -4,8 +4,8 @@ import "./styles.css";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import { store } from "./storage";
 import { useEffect } from "react";
-import { setClocks, setMatches } from "./storage/matchSlicer";
-import { Sidebar } from "./components/sidebar";
+import { configureTimers, updateGameList } from "./storage/matchSlicer";
+import { Sidebar } from "./components/navbar";
 import { getPopulatedTeams, teams } from "./data/team_data";
 import { players } from "./data/player_data";
 
@@ -55,7 +55,7 @@ const MatchSetter = () => {
           return true;
         }
       });
-      dispatch(setMatches(allValidMatches));
+      dispatch(updateGameList(allValidMatches));
     } catch (err) {
       console.log(err);
     }
@@ -93,7 +93,7 @@ const ClockIntervalHandler = () => {
       };
     });
     try {
-      dispatch(setClocks(newClocks));
+      dispatch(configureTimers(newClocks));
     } catch (err) {
       console.log(err);
     }
@@ -116,7 +116,7 @@ const ClockIntervalHandler = () => {
           };
         }
       });
-      dispatch(setClocks(newClocks));
+      dispatch(configureTimers(newClocks));
     }, 1000);
 
     return () => {

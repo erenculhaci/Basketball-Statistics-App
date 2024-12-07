@@ -5,49 +5,72 @@ import useResizeObserver from "use-resize-observer";
 const { Title, Text } = Typography;
 
 export const Field = ({ match }) => {
-  const { ref, width = 1200, height = 750 } = useResizeObserver();
-  const [isModalOpenShot, setIsModalOpenShot] = useState(false);
-  const [selectedShot, setSelectedShot] = useState(null);
-  const [selectedPlayer, setSelectedPlayer] = useState(null);
-  const [selectedTeam, setSelectedTeam] = useState(null);
+  const { ref: resizeRef, width = 1200, height = 750 } = useResizeObserver();
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [currentShot, setCurrentShot] = useState(null);
+  const [currentPlayer, setCurrentPlayer] = useState(null);
+  const [currentTeam, setCurrentTeam] = useState(null);
 
-  const shots = match.shotChart.shots;
-  const homePersons = match.statistics.home.persons;
-  const awayPersons = match.statistics.away.persons;
-  const allPersons = [...homePersons, ...awayPersons];
+  const shotData = match.shotChart.shots;
+  const homePlayers = match.statistics.home.persons;
+  const awayPlayers = match.statistics.away.persons;
+  const combinedPlayers = [...homePlayers, ...awayPlayers];
 
-  const findPersonByPersonId = (personId) =>
-    allPersons.find((person) => person.personId === personId);
+  const getPlayerById = (playerId) =>
+    combinedPlayers.find((player) => player.personId === playerId);
 
-  const findTeamByEntityId = (entityId) =>
-    match.fixture.competitors.find((team) => team.entityId === entityId);
+  const getTeamById = (teamId) =>
+    match.fixture.competitors.find((team) => team.entityId === teamId);
 
-  const showShotModal = (shot, player, team) => {
-    setSelectedShot(shot);
-    setSelectedPlayer(player);
-    setSelectedTeam(team);
-    setIsModalOpenShot(true);
+  const openShotModal = (shot, player, team) => {
+    setCurrentShot({ ...shot, desc: getShotDesc(shot.desc) });;
+    setCurrentPlayer(player);
+    setCurrentTeam(team);
+    setModalVisible(true);
   };
 
-  const handleCloseShotModal = () => setIsModalOpenShot(false);
+  const translations = {
+    "İki Sayı": "Two Pointer",
+    "Üç Sayı": "Three Pointer",
+    "Serbest Atış": "Free Throw",
+    "İki Sayı Layup": "Two Pointer Layup",
+    "Üç Sayı Jump Shot": "Three Pointer Jump Shot",
+    "İki Sayı Jump Shot": "Two Pointer Jump Shot",
+    "İki Sayı Driving Layup": "Two Pointer Driving Layup",
+    "İki Sayı Smaç": "Two Pointer Dunk",
+  };
+
+  const getShotDesc = (description) => {
+    return translations[description] || description; // Return the translated text if found, otherwise return the original text
+  };
+  
+
+  const closeShotModal = () => setModalVisible(false);
 
   return (
     <>
       {/* Shot Modal */}
-      <Modal
-        visible={isModalOpenShot}
-        onCancel={handleCloseShotModal}
+    <Modal
+        visible={isModalVisible}
+        onCancel={closeShotModal}
         className="custom-dark-modal"
         footer={null}
         title="Shot Details"
-        
         centered
       >
-        {selectedShot && selectedPlayer && selectedTeam && (
-          <div style={{ textAlign: "center" }}>
+        {currentShot && currentPlayer && currentTeam && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+            }}
+          >
             <img
-              src={selectedPlayer.personImage}
-              alt={selectedPlayer.personName}
+              src={currentPlayer.personImage}
+              alt={currentPlayer.personName}
               style={{
                 width: 100,
                 height: 100,
@@ -56,55 +79,56 @@ export const Field = ({ match }) => {
                 objectFit: "cover",
               }}
             />
-            <Title level={4}>{selectedPlayer.personName}</Title>
-            <Text strong>#{selectedPlayer.bib}</Text>
+            <Title level={4}>{currentPlayer.personName}</Title>
+            <Text strong>#{currentPlayer.bib}</Text>
             <Text type="secondary" style={{ display: "block", marginBottom: 20 }}>
-              {selectedTeam.name}
+              {currentTeam.name}
             </Text>
 
-            <Text>{selectedShot.desc}</Text>
+            <Text>{currentShot.desc}</Text>
             <div style={{ margin: "20px 0" }}>
               <Text
-                type={selectedShot.success ? "success" : "danger"}
+                type={currentShot.success ? "success" : "danger"}
                 strong
                 style={{ fontSize: 16 }}
               >
-                {selectedShot.success ? "Successful Shot" : "Missed Shot"}
+                {currentShot.success ? "Successful Shot" : "Missed Shot"}
               </Text>
             </div>
-            {selectedShot.details && (
+            {currentShot.details && (
               <Text type="secondary" style={{ display: "block" }}>
-                {selectedShot.details}
+                {currentShot.details}
               </Text>
             )}
           </div>
         )}
       </Modal>
 
+
       {/* Field with Shots */}
       <div className="w-full h-full relative mb-10">
-        {shots.map((shot, index) => {
-          const scaledX = (shot.x / 100) * width;
-          const scaledY = height - (shot.y / 100) * height;
+        {shotData.map((shot, idx) => {
+          const adjustedX = (shot.x / 100) * width;
+          const adjustedY = height - (shot.y / 100) * height;
 
-          const player = findPersonByPersonId(shot.personId);
-          const team = findTeamByEntityId(shot.entityId);
+          const player = getPlayerById(shot.personId);
+          const team = getTeamById(shot.entityId);
 
           return (
             <div
-              key={index}
+              key={idx}
               style={{
-                top: scaledY,
-                left: scaledX,
+                top: adjustedY,
+                left: adjustedX,
               }}
               className={`absolute cursor-pointer w-4 h-4 rounded-full z-10 ${
                 shot.success ? "bg-green-400" : "bg-red-400"
               } hover:scale-125`}
-              onClick={() => showShotModal(shot, player, team)}
+              onClick={() => openShotModal(shot, player, team)}
             />
           );
         })}
-        <img ref={ref} src="/field.png" alt="Field" style={{ width: "100%" }} />
+        <img ref={resizeRef} src="/field.png" alt="Field" style={{ width: "100%" }} />
       </div>
     </>
   );
